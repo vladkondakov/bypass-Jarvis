@@ -1,0 +1,19 @@
+{
+  "name": "present-pack-algorithm",
+  "version": "1.0.0",
+  "description": "present pack algorithm jarvis bypass",
+  "main": "app.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "jarvis",
+    "bypass"
+  ],
+  "author": "Vladislav Kondakov <vladisloove.kondakov@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "path": "^0.12.7"
+  }
+}
