@@ -5,6 +5,7 @@ class Point {
     constructor(x, y) {
         this.x = x;
         this.y = y;
+        this.skip = false;
     }
 }
 
@@ -98,37 +99,50 @@ const bypassJarvis = (setOfPoints) => {
         let minPolarAngle = Math.PI * 3;
         let pointToAdd = new Point(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
         let indexToAdd;
-        
+
         for (let i = 0; i < setOfPoints.length; i++) {
             let curPolarAngle;
             const curPoint = setOfPoints[i];
 
+            const convexLen = convexHull.length;
+
+            if (curPoint.skip) {
+                continue;
+            }
+
             if (indexes.length == 1) {
-                const isTheSame = curPoint.x == startPoint.x && curPoint.y == startPoint.y
+                const isTheSame = curPoint.x === startPoint.x && curPoint.y === startPoint.y
                 curPolarAngle = (isTheSame) ? Math.PI * 4 : getPolarAngle1(startPoint, curPoint);
             } else {
-                const convexLen = convexHull.length;
                 curPolarAngle = getPolarAngle2(convexHull[convexLen - 2], convexHull[convexLen - 1], curPoint);
             }
+
             if (minPolarAngle > curPolarAngle) {
                 minPolarAngle = curPolarAngle;
                 pointToAdd = curPoint;
                 indexToAdd = i;
-            }
-            if (minPolarAngle == curPolarAngle) {
-                const m1 = getVectorModule(curPoint.x - startPoint.x, curPoint.y - startPoint.y);
-                const m2 = getVectorModule(pointToAdd.x - startPoint.x, pointToAdd.y - startPoint.y);
+            } else if (minPolarAngle === curPolarAngle) {
+                const mainPoint = convexHull[convexLen - 2] || convexHull[convexLen - 1];
+                const m1 = getVectorModule(curPoint.x - mainPoint.x, curPoint.y - startPoint.y);
+                const m2 = getVectorModule(pointToAdd.x - mainPoint.x, pointToAdd.y - startPoint.y);
+
                 if (m1 <= m2) {
+                    curPoint.skip = true;
+                } else {
                     pointToAdd = curPoint;
                     indexToAdd = i;
                 }
             }
         }
-        if (pointToAdd.x == startPoint.x && pointToAdd.y == startPoint.y) {
+
+        if (pointToAdd.x === startPoint.x && pointToAdd.y === startPoint.y) {
             break;
         }
-        convexHull.push(pointToAdd);
-        indexes.push(indexToAdd);
+        
+        if (!pointToAdd.skip) {
+            convexHull.push(pointToAdd);
+            indexes.push(indexToAdd);
+        }
     }
 
     return convexHull;
