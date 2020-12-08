@@ -122,7 +122,7 @@ const bypassJarvis = (setOfPoints) => {
                 pointToAdd = curPoint;
                 indexToAdd = i;
             } else if (minPolarAngle === curPolarAngle) {
-                const mainPoint = convexHull[convexLen - 2] || convexHull[convexLen - 1];
+                const mainPoint = convexHull[convexLen - 1];
                 const m1 = getVectorModule(curPoint.x - mainPoint.x, curPoint.y - mainPoint.y);
                 const m2 = getVectorModule(pointToAdd.x - mainPoint.x, pointToAdd.y - mainPoint.y);
 
@@ -139,7 +139,7 @@ const bypassJarvis = (setOfPoints) => {
         if (pointToAdd.x === startPoint.x && pointToAdd.y === startPoint.y) {
             break;
         }
-        
+
         if (!pointToAdd.skip) {
             convexHull.push(pointToAdd);
             indexes.push(indexToAdd);
@@ -152,7 +152,7 @@ const bypassJarvis = (setOfPoints) => {
 const writeToFile = (p, data) => {
     fs.writeFile(p, data, err => {
         if (err) {
-            console.log("Some error in writting to output file");
+            console.log("Some error in writing to output file");
         }
     });
 }
@@ -165,7 +165,7 @@ const start = () => {
     for (point of convexHull) {
         result.push(`${point.x} ${point.y}\n`);
     }
-    const strData = `Выпуклую оболочку образуют ${convexHull.length} точек:\n` + result.toString().replace(/,/g, '');
+    const strData = `The convex hull consists of ${convexHull.length} points:\n` + result.toString().replace(/,/g, '');
     writeToFile(p2, strData);
 };
 
