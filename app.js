@@ -123,18 +123,19 @@ const bypassJarvis = (setOfPoints) => {
                 indexToAdd = i;
             } else if (minPolarAngle === curPolarAngle) {
                 const mainPoint = convexHull[convexLen - 2] || convexHull[convexLen - 1];
-                const m1 = getVectorModule(curPoint.x - mainPoint.x, curPoint.y - startPoint.y);
-                const m2 = getVectorModule(pointToAdd.x - mainPoint.x, pointToAdd.y - startPoint.y);
+                const m1 = getVectorModule(curPoint.x - mainPoint.x, curPoint.y - mainPoint.y);
+                const m2 = getVectorModule(pointToAdd.x - mainPoint.x, pointToAdd.y - mainPoint.y);
 
                 if (m1 <= m2) {
                     curPoint.skip = true;
                 } else {
+                    pointToAdd.skip = true;
                     pointToAdd = curPoint;
                     indexToAdd = i;
                 }
             }
         }
-
+        
         if (pointToAdd.x === startPoint.x && pointToAdd.y === startPoint.y) {
             break;
         }
