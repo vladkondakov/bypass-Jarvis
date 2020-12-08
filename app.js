@@ -79,12 +79,17 @@ const getVectorModule = (x, y) => {
 
 const getPolarAngle2 = (point1, point2, c) => {
     // a * b = |a| * |b| * cos(phi) = a.x * b.x + a.y * b.y, where a and b are vectors.
+    if ((point2.x === c.x && point2.y === c.y) || (point1.x === c.x && point1.y === c.y)) {
+        return 2 * Math.PI;
+    }
+
     const x1 = point1.x - point2.x;
     const x2 = c.x - point2.x;
     const y1 = point1.y - point2.y;
     const y2 = c.y - point2.y;
     const m1 = getVectorModule(x1, y1);
     const m2 = getVectorModule(x2, y2);
+    
     const angleBetweenVectors = Math.acos((x1 * x2 + y1 * y2) / (m1 * m2));
 
     return Math.PI - angleBetweenVectors;
@@ -117,15 +122,14 @@ const bypassJarvis = (setOfPoints) => {
                 curPolarAngle = getPolarAngle2(convexHull[convexLen - 2], convexHull[convexLen - 1], curPoint);
             }
 
-            if (minPolarAngle > curPolarAngle) {
+            if (parseFloat(minPolarAngle.toFixed(6)) > parseFloat(curPolarAngle.toFixed(6))) {
                 minPolarAngle = curPolarAngle;
                 pointToAdd = curPoint;
                 indexToAdd = i;
-            } else if (minPolarAngle === curPolarAngle) {
+            } else if (minPolarAngle.toFixed(6) === curPolarAngle.toFixed(6)) {
                 const mainPoint = convexHull[convexLen - 1];
                 const m1 = getVectorModule(curPoint.x - mainPoint.x, curPoint.y - mainPoint.y);
                 const m2 = getVectorModule(pointToAdd.x - mainPoint.x, pointToAdd.y - mainPoint.y);
-
                 if (m1 <= m2) {
                     curPoint.skip = true;
                 } else {
@@ -135,7 +139,7 @@ const bypassJarvis = (setOfPoints) => {
                 }
             }
         }
-        
+
         if (pointToAdd.x === startPoint.x && pointToAdd.y === startPoint.y) {
             break;
         }
