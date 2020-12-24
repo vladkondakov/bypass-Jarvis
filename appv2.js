@@ -5,6 +5,7 @@ class Point {
     constructor(x, y) {
         this.x = x;
         this.y = y;
+        this.skip = false;
     }
 }
 
@@ -49,17 +50,17 @@ const getFileData = (p) => {
 
 const rightBottomPointIndex = (setOfPoints) => {
     let resPoint = new Point(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-    let startIndex = 0;
+    let index = 0;
     for (let i = 0; i < setOfPoints.length; i++) {
         let point = setOfPoints[i];
         if ((point.y < resPoint.y) || (point.y == resPoint.y && point.x > resPoint.x)) {
             resPoint = Object.assign(new Point, point);
-            startIndex = i;
+            index = i;
         }
     }
     return {
         startPoint: resPoint,
-        startIndex
+        index
     };
 };
 
@@ -77,45 +78,58 @@ const getVectorModule = (x, y) => {
 }
 
 const bypassJarvis = (setOfPoints) => {
-    const { startPoint, startIndex } = rightBottomPointIndex(setOfPoints);
+    const { startPoint, index } = rightBottomPointIndex(setOfPoints);
     let convexHull = [startPoint];
-    let count = -1;
-    let indexes = Array(setOfPoints.length).fill(1).map(el => {
-        count++;
-        return el * count;
-    });
-    
-    indexes.push(startIndex);
-    indexes[startIndex] = 0;
-    indexes.shift();
-    
-    while (true) {
-        let nextIndex = 0;
-        const convexLen = convexHull.length;
+    let indexes = [index];
 
-        for (let i = 1; i < indexes.length; i++) {
-            const mainPoint = convexHull[convexLen - 1];
-            const curPoint = setOfPoints[indexes[i]];
-            const nextPoint = setOfPoints[indexes[nextIndex]];
-            const detValue = calcDet(mainPoint, nextPoint, curPoint);
+    while (true) {
+        let pointToAdd = new Point(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+        let indexToAdd;
+
+        for (let i = 0; i < setOfPoints.length; i++) {
+            const curPoint = setOfPoints[i];
+            const convexLen = convexHull.length;
+
+            if (curPoint.skip) {
+                continue;
+            }
+
+            if (convexLen === 1 && curPoint.x === startPoint.x && curPoint.y === startPoint.y) {
+                continue;
+            }
+
+            if (pointToAdd.x === Number.POSITIVE_INFINITY) {
+                pointToAdd = curPoint;
+                continue;
+            }
+            
+            const detValue = calcDet(convexHull[convexLen - 1], pointToAdd, curPoint);
 
             if (detValue < 0) {
-                nextIndex = i;
+                pointToAdd = curPoint;
+                indexToAdd = i;
             } else if (detValue === 0) {
+                const mainPoint = convexHull[convexLen - 1];
                 const m1 = getVectorModule(curPoint.x - mainPoint.x, curPoint.y - mainPoint.y);
-                const m2 = getVectorModule(nextPoint.x - mainPoint.x, nextPoint.y - mainPoint.y);
-                if (m1 >= m2) {
-                    nextIndex = i;
+                const m2 = getVectorModule(pointToAdd.x - mainPoint.x, pointToAdd.y - mainPoint.y);
+                if (m1 <= m2) {
+                    curPoint.skip = true;
+                } else {
+                    pointToAdd.skip = true;
+                    pointToAdd = curPoint;
+                    indexToAdd = i;
                 }
             }
         }
-
-        if (indexes[nextIndex] === startIndex) {
+        
+        if (pointToAdd.x === startPoint.x && pointToAdd.y === startPoint.y) {
             break;
-        } else {
-            convexHull.push(setOfPoints[indexes[nextIndex]]);
-            indexes.splice(nextIndex, 1);
-        } 
+        }
+
+        if (!pointToAdd.skip) {
+            convexHull.push(pointToAdd);
+            indexes.push(indexToAdd);
+        }
     }
 
     return convexHull;
