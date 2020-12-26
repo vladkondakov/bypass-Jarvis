@@ -26,42 +26,33 @@ const getPathsToFiles = () => {
 };
 
 const getFileData = (p) => {
-    let setOfPoints = [];
-
     let data = fs.readFileSync(p, 'utf-8');
     const lines = data.split(/\r\n|\r|\n/);
     const n = parseInt(lines[0]);
-    let i = 1; // Current index of line
 
-    const addPoint = (lineWithCoords) => {
-        const coords = lineWithCoords.split(' ');
-        const xCoord = parseInt(coords[0]);
-        const yCoord = parseInt(coords[1]);
-        setOfPoints.push(new Point(xCoord, yCoord));
-    }
-
-    for (i; i <= n; i++) {
-        addPoint(lines[i]);
-    }
-
-    return setOfPoints;
-}
-
-const rightBottomPointIndex = (setOfPoints) => {
+    let setOfPoints = [];
     let resPoint = new Point(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
     let startIndex = 0;
-    for (let i = 0; i < setOfPoints.length; i++) {
-        let point = setOfPoints[i];
+
+    for (let i = 1; i <= n; i++) {
+        const coords = lines[i].split(' ');
+        const xCoord = parseInt(coords[0]);
+        const yCoord = parseInt(coords[1]);
+        const point = new Point(xCoord, yCoord);
+        setOfPoints.push(point);
+
         if ((point.y < resPoint.y) || (point.y == resPoint.y && point.x > resPoint.x)) {
             resPoint = Object.assign(new Point, point);
-            startIndex = i;
+            startIndex = i - 1;
         }
     }
+
     return {
+        setOfPoints,
         startPoint: resPoint,
         startIndex
     };
-};
+}
 
 const calcDet = (p1, p2, p3) => {
     const x2 = p2.x - p1.x;
@@ -76,8 +67,8 @@ const getVectorModule = (x, y) => {
     return Math.sqrt(x * x + y * y);
 }
 
-const bypassJarvis = (setOfPoints) => {
-    const { startPoint, startIndex } = rightBottomPointIndex(setOfPoints);
+const bypassJarvis = (fileData) => {
+    const { setOfPoints, startPoint, startIndex } = fileData;
     let convexHull = [startPoint];
     let count = -1;
     let indexes = Array(setOfPoints.length).fill(1).map(el => {
@@ -131,8 +122,8 @@ const writeToFile = (p, data) => {
 
 const start = () => {
     const { p1, p2 } = getPathsToFiles();
-    const setOfPoints = getFileData(p1);
-    const convexHull = bypassJarvis(setOfPoints);
+    const fileData = getFileData(p1);
+    const convexHull = bypassJarvis(fileData);
     let result = [];
     for (point of convexHull) {
         result.push(`${point.x} ${point.y}\n`);
